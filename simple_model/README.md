@@ -102,12 +102,12 @@ Enter category[1-#], q for quit: 3
 ### Every-action reward environment ###
 | num_dice | num_dice_face | base (random) | Qlearning |
 |----------|---------------|---------------|-----------|
-| 3        | 2             | 4.485         | 3.965     |
-| 4        | 2             | 5.901         | 6.24      |
-| 5        | 2             | 7.462         | 8.109     |
-| 3        | 3             | 6.091         | 5.579     |
-| 4        | 3             | 7.842         | 7.766     |
-| 5        | 3             | 10.038        | 10.223    |
+| 3        | 2             | 4.457         | 5.587     |
+| 4        | 2             | 5.897         | 7.279     |
+| 5        | 2             | 7.571         | 8.914     |
+| 3        | 3             | 5.919         | 8.735     |
+| 4        | 3             | 7.896         | 11.488    |
+| 5        | 3             | 9.912         | 13.779    |
 
 The reason why I tried the `last-action-only` reward environment is that I wanted to see if the Q-Learning catches the high level strategy.
 For example, if I got dice as [1, 2, 3, 4] when any score category is not filled, then I will choose ones (1 * 1 = 1 point).
