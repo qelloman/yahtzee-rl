@@ -1,7 +1,7 @@
 import sys, os
 import click
 
-from simple_yahtzee import YahtzeeEnv
+from simple_yahtzee import SimpleYahtzeeEnv
 
 class HumanAgent(object):
     def act(self, ava_actions):
@@ -27,8 +27,7 @@ class HumanAgent(object):
 @click.option('-n', '--show-number', is_flag=True, default=False,
               show_default=True, help="Show location number in the board.")
 def play(show_number):
-    env = YahtzeeEnv()
-    print(env.available_actions())
+    env = SimpleYahtzeeEnv()
     agent = HumanAgent()
     episode = 0
     while True:

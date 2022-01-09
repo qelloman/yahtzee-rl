@@ -1,15 +1,12 @@
-import logging
 
+import logging
 import gym
 from gym import spaces
-
-from collections import defaultdict
 import numpy as np
-import sys
 
 
-class YahtzeeEnv(gym.Env):
-    def __init__(self, num_dice=3, num_dice_face=4, mode='human'):
+class SimpleYahtzeeEnv(gym.Env):
+    def __init__(self, num_dice=3, num_dice_face=4, mode='human', reward_mode='every'):
         self.mode = mode
         self.dice = None
         self.num_dice = num_dice
@@ -20,6 +17,7 @@ class YahtzeeEnv(gym.Env):
         self.seed()
         self.category_status = [0] * self.num_dice_face
         self.category_score = [0] * self.num_dice_face
+        self.reward_mode = reward_mode
 
     def reset(self):
         self.category_status = [0] * self.num_dice_face
@@ -36,10 +34,16 @@ class YahtzeeEnv(gym.Env):
 
         if self.is_finished():
             done = True
-            reward = float(self.get_total_score())
+            if self.reward_mode == 'every':
+                reward = score
+            else:
+                reward = float(self.get_total_score())
         else:
             done = False
-            reward = float(0.0)
+            if self.reward_mode == 'every':
+                reward = score
+            else:
+                reward = float(0)
             self.dice = self.roll_dice()
         state = self._get_obs()
 

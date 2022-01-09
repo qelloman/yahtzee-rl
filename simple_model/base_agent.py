@@ -1,6 +1,6 @@
 import random
 
-from simple_yahtzee import YahtzeeEnv
+from simple_yahtzee import SimpleYahtzeeEnv
 
 
 class BaseAgent(object):
@@ -9,7 +9,7 @@ class BaseAgent(object):
 
 
 def play(max_episode=100):
-    env = YahtzeeEnv(3, 3, 'silent')
+    env = SimpleYahtzeeEnv(3, 3, 'silent')
     print(env.available_actions())
     agent = BaseAgent()
     total_scores = []
