@@ -4,7 +4,7 @@ import json
 from collections import defaultdict
 from tqdm import tqdm as _tqdm
 import matplotlib.pyplot as plt
-from simple_yahtzee import SuperSimpleYahtzeeEnv
+from super_simple_yahtzee import SuperSimpleYahtzeeEnv
 
 tqdm = _tqdm
 

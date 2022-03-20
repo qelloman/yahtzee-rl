@@ -1,6 +1,6 @@
 import random
 
-from simple_yahtzee import SuperSimpleYahtzeeEnv
+from super_simple_yahtzee import SuperSimpleYahtzeeEnv
 
 
 class BaseAgent(object):

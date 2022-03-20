@@ -18,7 +18,7 @@ log_dir = './dqn/' + now_str
 writer = SummaryWriter(log_dir=log_dir)
 
 from tqdm import tqdm
-from simple_yahtzee import SuperSimpleYahtzeeEnv
+from super_simple_yahtzee import SuperSimpleYahtzeeEnv
 
 
 Transition = namedtuple('Transition',

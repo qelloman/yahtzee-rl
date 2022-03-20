@@ -1,6 +1,6 @@
 import sys, os
 import time
-from simple_yahtzee import SuperSimpleYahtzeeEnv
+from super_simple_yahtzee import SuperSimpleYahtzeeEnv
 import click
 
 

@@ -18,7 +18,7 @@ log_dir = './a2c/' + now_str
 writer = SummaryWriter(log_dir=log_dir)
 
 from tqdm import tqdm
-from simple_yahtzee import SuperSimpleYahtzeeEnv
+from super_simple_yahtzee import SuperSimpleYahtzeeEnv
 from torch.distributions import Categorical
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
