@@ -134,6 +134,8 @@ model
 test
 run_yahtzee.py
 .idea
-simple_model/*.dat
-simple_model/*.csv
-simple_model/*.bak
+*.dat
+*.csv
+*.bak
+*/log
+
