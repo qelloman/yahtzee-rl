@@ -1,9 +1,12 @@
+import datetime
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
 from torch.nn.utils import clip_grad_norm_
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from yahtzee import YahtzeeEnv
@@ -98,7 +101,7 @@ class PPO:
         # 유효하지 않은 액션의 확률을 0으로 설정
         mask = torch.zeros_like(action_probs).to(self.device)
         mask[0, valid_actions] = 1
-        masked_probs = action_probs * mask.detach()
+        masked_probs = safe_normalize(action_probs, mask)
         if masked_probs.sum() == 0:
             print("Zero masekd probs")
         masked_probs = masked_probs / masked_probs.sum()  # 확률 재정규화
@@ -107,14 +110,14 @@ class PPO:
         action = dist.sample()
         return action.item(), dist.log_prob(action)
 
-    def update(self, states, actions, old_log_probs, returns, advantages, valid_actions_list):
+    def update(self, states, actions, old_log_probs, returns, advantages, valid_actions_list, writer, step):
         states = torch.FloatTensor(states).to(self.device)
         actions = torch.LongTensor(actions).to(self.device)
         old_log_probs = torch.FloatTensor(old_log_probs).to(self.device)
         # returns = torch.FloatTensor(returns)
         # advantages = torch.FloatTensor(advantages).to(self.device)
 
-        for _ in range(10):  # PPO 업데이트 횟수
+        for _ in range(1):  # PPO 업데이트 횟수
             action_probs, values = self.actor_critic(states)
             
             # 유효한 액션만 고려
@@ -147,8 +150,13 @@ class PPO:
             clip_grad_norm_(self.actor_critic.parameters(), max_norm)
 
             self.optimizer.step()
+            writer.add_scalar("train/actor_loss", actor_loss.item(), global_step=step)
+            writer.add_scalar("train/critic_loss", critic_loss.item(), global_step=step)
 
 def train_ppo():
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    log_dir = f"logs/ppo/{current_time}"
+    writer = SummaryWriter(log_dir=log_dir)
 
     env = YahtzeeEnv()
     eval_env = YahtzeeEnv()
@@ -191,7 +199,7 @@ def train_ppo():
         advantages = returns - values.detach().squeeze()
 
         # Update PPO
-        ppo.update(states, actions, log_probs, returns, advantages, valid_actions_list)
+        ppo.update(states, actions, log_probs, returns, advantages, valid_actions_list, writer, episode)
 
 
         if episode % eval_freq == 0:
