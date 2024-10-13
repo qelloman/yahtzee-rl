@@ -137,3 +137,8 @@ run_yahtzee.py
 simple_model/*.dat
 simple_model/*.csv
 simple_model/*.bak
+
+# logs
+*.out
+logs
+runs
