@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Env Test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "test_yahtzee.py",
             "console": "integratedTerminal",
@@ -14,9 +14,25 @@
         },
         {
             "name": "PPO test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "ppo.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "PPO Yathzee OneShot",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "ppo_yahtzee_oneshot.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "PPO Simple Yathzee",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "ppo_yahtzee_simple.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
