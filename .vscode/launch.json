@@ -24,17 +24,37 @@
             "name": "PPO Yathzee OneShot",
             "type": "debugpy",
             "request": "launch",
-            "program": "ppo_yahtzee_oneshot.py",
+            "program": "run_ppo.py",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "--env-id",
+                "YahtzeeOneShot-v0",
+                "--num-envs",
+                "4",
+                "--seed",
+                "1",
+                "--total-timesteps",
+                "25000"
+            ]
         },
         {
             "name": "PPO Simple Yathzee",
             "type": "debugpy",
             "request": "launch",
-            "program": "ppo_yahtzee_simple.py",
+            "program": "run_ppo.py",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "--env-id",
+                "YahtzeeSimple-v0",
+                "--num-envs",
+                "4",
+                "--seed",
+                "1",
+                "--total-timesteps",
+                "25000"
+            ]
         }
     ]
 }
