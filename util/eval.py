@@ -30,7 +30,7 @@ def eval(agent, env, eval_num, device, log_dir):
                 f.write(f"action mask: {info['action_mask']}\n")
                 with torch.no_grad():
                     logits = agent.actor(torch.Tensor(obs).unsqueeze(0).to(device))
-                    action_probs = F.softmax(logits.squeeze())
+                    action_probs = F.softmax(logits.squeeze(), dim=-1)
                     
                     f.write(f"hold probs: {action_probs[:31]}\n")
                     f.write(f"action probs: {action_probs[31:]}\n")

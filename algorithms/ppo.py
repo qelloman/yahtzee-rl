@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 from models.actor_critic import ActorCritic
 from util.eval import eval
@@ -56,7 +57,7 @@ class PPO:
         num_updates = self.args.total_timesteps // self.args.batch_size
         wrong_action = 0
 
-        for update in range(1, num_updates + 1):
+        for update in tqdm(range(1, num_updates + 1), "Training"):
             if self.args.anneal_lr:
                 frac = 1.0 - (update - 1.0) / num_updates
                 lrnow = frac * self.args.learning_rate
@@ -177,7 +178,6 @@ class PPO:
             self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), global_step)
             self.writer.add_scalar("losses/explained_variance", explained_var, global_step)
             self.writer.add_scalar("losses/wrong_action", wrong_action, global_step)
-            print("SPS:", int(global_step / (time.time() - start_time)))
             self.writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
             if update % self.args.eval_freq == 0:
