@@ -55,6 +55,15 @@
                 "--total-timesteps",
                 "250000"
             ]
+        },
+        {
+            "name": "MuZero Simple Yathzee",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_muzero.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": []
         }
     ]
 }
