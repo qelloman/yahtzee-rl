@@ -68,7 +68,7 @@ class YahtzeeSimpleEnv(gym.Env):
         rolls_left_one_hot = np.eye(3)[self.rolls_left]  # 3 features
 
         # 모든 처리된 특성을 하나의 벡터로 결합
-        obs = np.concatenate([dice_one_hot, scorecard_arr, cateogry_filled_arr, rolls_left_one_hot])
+        obs = np.concatenate([dice_one_hot, scorecard_arr, cateogry_filled_arr, rolls_left_one_hot], dtype=np.float32)
 
         return obs
     
