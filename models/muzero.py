@@ -136,7 +136,7 @@ class Networks(nn.Module):
     def __init__(self, representation_network, value_network, policy_network, dynamic_network, reward_network, max_value):
         super().__init__()
         self.train_steps = 0
-        self.action_size = 2
+        self.action_size = 37
         self.representation_network = representation_network
         self.value_network = value_network
         self.policy_network = policy_network

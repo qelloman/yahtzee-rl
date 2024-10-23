@@ -332,8 +332,8 @@ def test(config, network, env, test_rewards):
 
 config = {
           # Simulation and environment Config
-          'action_space_size': 2, # number of action
-          'state_shape': 4,
+          'action_space_size': 37, # number of action
+          'state_shape': 45,
           'games_per_epoch': 20,
           'num_epochs': 25,
           'train_per_epoch': 30,
@@ -341,11 +341,11 @@ config = {
           'cartpole_stop_reward': 200,
 
           'visit_softmax_temperature_fn': 1,
-          'max_moves': 200,
+          'max_moves': 18,
           'num_simulations': 50,
           'discount': 0.997,
           'min_value': 0,
-          'max_value': 200,
+          'max_value': 105, # (1 + ... + 6) * 5
 
           # Root prior exploration noise.
           'root_dirichlet_alpha': 0.1,
@@ -356,7 +356,7 @@ config = {
           'pb_c_init': 1.25,
 
           # Model fitting config
-          'embedding_size': 4,
+          'embedding_size': 8,
           'hidden_neurons': 48,
           'buffer_size': 200,
           'batch_size': 512,
@@ -380,10 +380,10 @@ set_seeds()
 
 # Create networks
 rep_net = RepresentationNetwork(input_size=config['state_shape'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']) # representation function
-val_net = ValueNetwork(input_size=4, hidden_neurons=config['hidden_neurons'], value_support_size=value_support_size) # prediction function
-pol_net = PolicyNetwork(input_size=4, hidden_neurons=config['hidden_neurons'], action_size=config['action_space_size']) # prediction function
-dyn_net = DynamicNetwork(input_size=6, hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']) # dynamics function
-rew_net = RewardNetwork(input_size=6, hidden_neurons=config['hidden_neurons']) # from dynamics function
+val_net = ValueNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], value_support_size=value_support_size) # prediction function
+pol_net = PolicyNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], action_size=config['action_space_size']) # prediction function
+dyn_net = DynamicNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']) # dynamics function
+rew_net = RewardNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons']) # from dynamics function
 network = Networks(rep_net, val_net, pol_net, dyn_net, rew_net, max_value=config['max_value'])
 
 # Create environment
