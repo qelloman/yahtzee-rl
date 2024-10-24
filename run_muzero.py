@@ -117,20 +117,20 @@ def update_weights(config, network, optimizer, batch, train_results):
         (state_batch, targets_init_batch, targets_recurrent_batch,
          actions_batch) = batch
 
-        state_batch = torch.tensor(state_batch)
+        state_batch = torch.tensor(state_batch).to(network.device)
 
         # get prediction from initial model (i.e. combination of dynamic, value, and policy networks)
         hidden_representation, initial_values, policy_logits = network.initial_model(state_batch)
 
         # create a value and policy target from batch data
         target_value_batch, _, target_policy_batch = zip(*targets_init_batch) # (value, reward, policy)
-        target_value_batch = torch.tensor(target_value_batch).float()
+        target_value_batch = torch.tensor(target_value_batch).float().to(network.device)
         target_value_batch = network._scalar_to_support(target_value_batch) # transform into a multi-dimensional target
 
         # compute the error for the initial inference
         # reward error is always 0 for initial inference
         value_loss = F.cross_entropy(initial_values, target_value_batch)
-        policy_loss = F.cross_entropy(policy_logits, torch.tensor(target_policy_batch))
+        policy_loss = F.cross_entropy(policy_logits, torch.tensor(target_policy_batch).to(network.device))
         loss = 0.25 * value_loss + policy_loss
 
         total_value_loss = 0.25 * value_loss.item()
@@ -141,15 +141,15 @@ def update_weights(config, network, optimizer, batch, train_results):
             target_value_batch, target_reward_batch, target_policy_batch = zip(*targets_batch)
 
             # get prediction from recurrent_model (i.e. dynamic, reward, value, and policy networks)
-            actions_batch_onehot = F.one_hot(torch.tensor(actions_batch), num_classes=network.action_size).float()
-            state_with_action = torch.cat((hidden_representation, actions_batch_onehot), dim=1)
+            actions_batch_onehot = F.one_hot(torch.tensor(actions_batch).to(network.device), num_classes=network.action_size).float()
+            state_with_action = torch.cat((hidden_representation, actions_batch_onehot), dim=1).to(network.device)
             hidden_representation, rewards, values, policy_logits = network.recurrent_model(state_with_action)
 
             # create a value, policy, and reward target from batch data
-            target_value_batch = torch.tensor(target_value_batch).float()
+            target_value_batch = torch.tensor(target_value_batch).float().to(network.device)
             target_value_batch = network._scalar_to_support(target_value_batch)
-            target_policy_batch = torch.tensor(target_policy_batch).float()
-            target_reward_batch = torch.tensor(target_reward_batch).float()
+            target_policy_batch = torch.tensor(target_policy_batch).float().to(network.device)
+            target_reward_batch = torch.tensor(target_reward_batch).float().to(network.device)
 
             # compute the loss for recurrent_inference 
             value_loss = F.cross_entropy(values, target_value_batch)
@@ -336,13 +336,13 @@ config = {
           'state_shape': 45,
           'games_per_epoch': 20,
           'num_epochs': 25,
-          'train_per_epoch': 30,
+          'train_per_epoch': 10, #30,
           'episodes_per_test': 10,
           'cartpole_stop_reward': 200,
 
           'visit_softmax_temperature_fn': 1,
           'max_moves': 18,
-          'num_simulations': 50,
+          'num_simulations': 10, # 50
           'discount': 0.997,
           'min_value': 0,
           'max_value': 105, # (1 + ... + 6) * 5
@@ -363,6 +363,9 @@ config = {
           'num_unroll_steps': 5,
           'td_steps': 10,
           'lr_init': 0.01,
+
+          # device
+          'device': torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
           }
 
 SEED = 0
@@ -379,12 +382,12 @@ value_support_size = math.ceil(math.sqrt(config['max_value'])) + 1
 set_seeds()
 
 # Create networks
-rep_net = RepresentationNetwork(input_size=config['state_shape'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']) # representation function
-val_net = ValueNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], value_support_size=value_support_size) # prediction function
-pol_net = PolicyNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], action_size=config['action_space_size']) # prediction function
-dyn_net = DynamicNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']) # dynamics function
-rew_net = RewardNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons']) # from dynamics function
-network = Networks(rep_net, val_net, pol_net, dyn_net, rew_net, max_value=config['max_value'])
+rep_net = RepresentationNetwork(input_size=config['state_shape'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']).to(config['device']) # representation function
+val_net = ValueNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], value_support_size=value_support_size).to(config['device']) # prediction function
+pol_net = PolicyNetwork(input_size=config['embedding_size'], hidden_neurons=config['hidden_neurons'], action_size=config['action_space_size']).to(config['device']) # prediction function
+dyn_net = DynamicNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons'], embedding_size=config['embedding_size']).to(config['device']) # dynamics function
+rew_net = RewardNetwork(input_size=config['embedding_size']+config['action_space_size'], hidden_neurons=config['hidden_neurons']).to(config['device']) # from dynamics function
+network = Networks(rep_net, val_net, pol_net, dyn_net, rew_net, config)
 
 # Create environment
 env = YahtzeeSimpleEnv()

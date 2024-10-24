@@ -26,10 +26,14 @@ class Node(object):
         else:
             return self.value_sum / self.visit_count
         
+    def __repr__(self):
+        return f"{self.expanded} pr={self.prior} visit={self.visit_count} value_sum={self.value_sum} value={self.value()}"
+        
 
 class MCTS():
     
     def __init__(self, config):
+        self.device = config['device']
         self.config = config
         
     def run_mcts(self, config, root, network, min_max_stats):
@@ -104,7 +108,7 @@ class MCTS():
                     / config['pb_c_base']) + config['pb_c_init']
         pb_c *= np.sqrt(parent.visit_count) / (child.visit_count + 1)
 
-        prior_score = pb_c*child.prior.detach().numpy()
+        prior_score = pb_c*child.prior.cpu().detach().numpy()
         if child.visit_count > 0:
             value_score = min_max_stats.normalize(
                 child.reward + config['discount']*child.value())
@@ -119,13 +123,13 @@ class MCTS():
         """
         # obtain the latent state, policy, and value of the root node 
         # by using a InitialModel
-        observation = torch.tensor(current_state)
+        observation = torch.tensor(current_state).to(self.device)
         transformed_value, reward, policy_logits, hidden_representation = network.initial_inference(observation)
         node.hidden_representation = hidden_representation
         node.reward = reward # always 0 for initial inference
 
         # extract softmax policy and set node.policy
-        softmax_policy = torch.nn.functional.softmax(torch.squeeze(policy_logits))
+        softmax_policy = torch.nn.functional.softmax(torch.squeeze(policy_logits), dim=-1)
         node.policy = softmax_policy
 
         # instantiate node's children with prior values, obtained from the predicted policy
@@ -149,7 +153,7 @@ class MCTS():
         node.reward = reward
 
         # compute softmax policy and store it to node.policy
-        softmax_policy = torch.nn.functional.softmax(torch.squeeze(policy_logits))
+        softmax_policy = torch.nn.functional.softmax(torch.squeeze(policy_logits), dim=-1)
         node.policy = softmax_policy
 
         # instantiate node's children with prior values, obtained from the predicted softmax policy

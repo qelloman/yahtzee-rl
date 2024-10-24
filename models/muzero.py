@@ -133,10 +133,11 @@ class Networks(nn.Module):
     Create both InitialModel and RecurrentModel class objects 
     and helper functions to run MCTS and train models
     """
-    def __init__(self, representation_network, value_network, policy_network, dynamic_network, reward_network, max_value):
+    def __init__(self, representation_network, value_network, policy_network, dynamic_network, reward_network, config):
         super().__init__()
+        self.device = config['device']
         self.train_steps = 0
-        self.action_size = 37
+        self.action_size = config['action_space_size']
         self.representation_network = representation_network
         self.value_network = value_network
         self.policy_network = policy_network
@@ -145,7 +146,7 @@ class Networks(nn.Module):
         self.initial_model = InitialModel(self.representation_network, self.value_network, self.policy_network)
         self.recurrent_model = RecurrentModel(self.dynamic_network, self.reward_network, self.value_network,
                                               self.policy_network)
-        self.value_support_size = math.ceil(math.sqrt(max_value)) + 1
+        self.value_support_size = math.ceil(math.sqrt(config['max_value'])) + 1
 
     def initial_inference(self, state):
         hidden_representation, value, policy_logits = self.initial_model(state)
@@ -162,8 +163,8 @@ class Networks(nn.Module):
         Apply invertable transformation to get a numpy scalar value
         """
         epsilon = 0.001
-        value = torch.nn.functional.softmax(value_support)
-        value = np.dot(value.detach().numpy(), range(self.value_support_size))
+        value = torch.nn.functional.softmax(value_support, dim=-1)
+        value = np.dot(value.cpu().detach().numpy(), range(self.value_support_size))
         value = np.sign(value) * (
                 ((np.sqrt(1 + 4 * epsilon
                  * (np.abs(value) + 1 + epsilon)) - 1) / (2 * epsilon)) ** 2 - 1
@@ -181,7 +182,7 @@ class Networks(nn.Module):
         Merge hidden state and one hot encoded action
         """
         hidden_state_with_action = torch.concat(
-            (hidden_state, torch.tensor(self._action_to_one_hot(action, self.action_size))[0]), axis=0)
+            (hidden_state, torch.tensor(self._action_to_one_hot(action, self.action_size)).to(self.device)[0]), axis=0)
         return hidden_state_with_action
     
     def _action_to_one_hot(self, action, action_space_size):
@@ -195,7 +196,7 @@ class Networks(nn.Module):
         Transform value into a multi-dimensional target value to train a network
         """
         batch = target_value.size(0)
-        targets = torch.zeros((batch, self.value_support_size))
+        targets = torch.zeros((batch, self.value_support_size)).to(self.device)
         target_value = torch.sign(target_value) * \
             (torch.sqrt(torch.abs(target_value) + 1)
             - 1 + 0.001 * target_value)
@@ -205,7 +206,7 @@ class Networks(nn.Module):
         targets[torch.arange(batch, dtype=torch.long), floor.long()] = 1 - rest
         indexes = floor.long() + 1
         mask = indexes < self.value_support_size
-        batch_mask = torch.arange(batch)[mask]
+        batch_mask = torch.arange(batch).to(self.device)[mask]
         rest_mask = rest[mask]
         index_mask = indexes[mask]
         targets[batch_mask, index_mask] = rest_mask
