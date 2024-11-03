@@ -64,6 +64,14 @@ class MCTS():
             # perform backpropagation
             self.backpropagate(search_path, value,
                         config['discount'], min_max_stats)
+            
+            # Only For Debugging
+            if i % 10 == 0:
+                # please write to the file the ucb scores, prior and visit count of root's children
+                with open('mcts_stats.txt', 'a') as f:
+                    f.write(f"Simulation {i} completed\n")
+                    for action, child in root.children.items():
+                        f.write(f"Action: {action}, UCB: {self.ucb_score(config, root, child, min_max_stats).item():.03f}, Prior: {child.prior:.03f}, Visit Count: {child.visit_count}\n")
 
 
     def select_action(self, config, node, test=False):
